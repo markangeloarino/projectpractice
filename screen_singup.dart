@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:neis_cap/Frontend-jobseeker/seeker_dashboard.dart';
-import 'package:neis_cap/screen_job.dart';
-import 'package:neis_cap/screen_login.dart';
+import 'package:flutter/material.dart'; 
 import 'package:provider/provider.dart';
-import 'package:neis_cap/auth_provider.dart';
+
+import 'Frontend-jobseeker/seeker_dashboard.dart';
+import 'auth_provider.dart';
+import 'screen_job.dart';
+import 'screen_login.dart'; 
 
 class ScreenSignup extends StatefulWidget {
   const ScreenSignup({super.key});

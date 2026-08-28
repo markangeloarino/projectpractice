@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:neis_cap/screen_job.dart';
-import 'package:provider/provider.dart'; // <--- ADDED THIS
-import 'package:neis_cap/auth_provider.dart';
-
+ import 'package:provider/provider.dart'; // <--- ADDED THIS
+ 
 import 'Frontend-jobseeker/seeker_dashboard.dart';
+import 'auth_provider.dart';
+import 'screen_job.dart';
 import 'screen_singup.dart';
 
 class ScreenLogin extends StatefulWidget {

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:neis_cap/Frontend-jobposting/post_vacancy_provider.dart';
 
+import '../post_vacancy_provider.dart';
+ 
 class StaffJobPostingsTab extends StatefulWidget {
   const StaffJobPostingsTab({super.key});
 
@@ -25,8 +26,7 @@ class _StaffJobPostingsTabState extends State<StaffJobPostingsTab> {
   final TextEditingController _descCtrl = TextEditingController();
   final TextEditingController _qualCtrl = TextEditingController();
   final TextEditingController _careerLinkCtrl = TextEditingController();
-  String _jobLocationType = 'Local';
-
+ 
   final Color sidebarBlue = const Color(0xFF23367A);
   final Color cardWhite = Colors.white;
   final Color textDark = const Color(0xFF1E293B);
@@ -500,7 +500,7 @@ class _StaffJobPostingsTabState extends State<StaffJobPostingsTab> {
                             true, 
                             DropdownButtonFormField<String>(
                               isExpanded: true,
-                              value: selectedEmployer, 
+                              initialValue: selectedEmployer, 
                               dropdownColor: cardWhite,
                               hint: const Text(
                                 "Select Employer", 
@@ -522,14 +522,14 @@ class _StaffJobPostingsTabState extends State<StaffJobPostingsTab> {
                       children: [
                         Expanded(child: _buildLabeledField("Employment Type", true, DropdownButtonFormField<String>(
                           isExpanded: true,
-                          value: selectedEmpType, dropdownColor: cardWhite, decoration: _dropdownDecoration(),
+                          initialValue: selectedEmpType, dropdownColor: cardWhite, decoration: _dropdownDecoration(),
                           items: ['Full-time', 'Part-time', 'Contract', 'Temporary', 'Internship'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
                           onChanged: (v) => setStateDialog(() => selectedEmpType = v!),
                         ))),
                         const SizedBox(width: 15),
                         Expanded(child: _buildLabeledField("Job Status", true, DropdownButtonFormField<String>(
                           isExpanded: true,
-                          value: status, dropdownColor: cardWhite, decoration: _dropdownDecoration(),
+                          initialValue: status, dropdownColor: cardWhite, decoration: _dropdownDecoration(),
                           items: ['Active', 'Closed'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
                           onChanged: (v) => setStateDialog(() => status = v!),
                         ))),
@@ -542,7 +542,7 @@ class _StaffJobPostingsTabState extends State<StaffJobPostingsTab> {
                       children: [
                         Expanded(child: _buildLabeledField("Job Scope", false, DropdownButtonFormField<String>(
                           isExpanded: true, 
-                          value: selectedJobScope, dropdownColor: cardWhite, decoration: _dropdownDecoration(),
+                          initialValue: selectedJobScope, dropdownColor: cardWhite, decoration: _dropdownDecoration(),
                           items: ['Local', 'Overseas'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
                           onChanged: (v) => setStateDialog(() => selectedJobScope = v!),
                         ))),

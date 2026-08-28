@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:neis_cap/screen_job_details.dart';
-import 'package:provider/provider.dart';
-import 'package:neis_cap/screen_login.dart';
-import 'package:neis_cap/screen_singup.dart';
-import 'package:neis_cap/Frontend-jobposting/post_vacancy_provider.dart';
-import 'package:intl/intl.dart'; // NEW: Required for formatting the date
+ import 'package:provider/provider.dart'; 
+import 'package:intl/intl.dart';
+
+import 'Frontend-jobposting/post_vacancy_provider.dart';
+import 'screen_job_details.dart';
+import 'screen_login.dart';
+import 'screen_singup.dart'; // NEW: Required for formatting the date
 
 class ScreenHome extends StatefulWidget {
   const ScreenHome({super.key});

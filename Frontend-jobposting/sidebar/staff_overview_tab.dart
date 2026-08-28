@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:neis_cap/Frontend-jobposting/post_vacancy_provider.dart';
+ 
+import '../post_vacancy_provider.dart';
 
 class StaffOverviewTab extends StatelessWidget {
   const StaffOverviewTab({super.key});

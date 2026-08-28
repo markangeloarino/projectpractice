@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:neis_cap/Frontend-jobposting/post_vacancy_provider.dart';
-import 'package:neis_cap/Frontend-jobseeker/profile/6_certification_training.dart';
-import 'package:neis_cap/Frontend-jobseeker/profile/5_educational_background.dart';
-import 'package:neis_cap/Frontend-jobseeker/profile/7_eligibility_license.dart';
-import 'package:neis_cap/Frontend-jobseeker/profile/2_employment_status.dart';
-import 'package:neis_cap/Frontend-jobseeker/profile/3_job_preference.dart';
-import 'package:neis_cap/Frontend-jobseeker/profile/4_language_dialect.dart';
-import 'package:neis_cap/Frontend-jobseeker/profile/9_other_skills.dart';
-import 'package:neis_cap/Frontend-jobseeker/profile/1_personal_information.dart';
-import 'package:neis_cap/Frontend-jobseeker/profile/8_work_experience.dart';
-import 'package:neis_cap/Frontend-jobseeker/seeker_dashboard.dart';
-import 'package:neis_cap/auth_provider.dart';
-import 'package:neis_cap/screen_login.dart';
 import 'package:provider/provider.dart';
+import '../auth_provider.dart';
+import '../screen_login.dart';
+import 'profile/step_1_personal_information.dart';
+import 'profile/step_2_employment_status.dart';
+import 'profile/step_3_job_preference.dart';
+import 'profile/step_4_language_dialect.dart';
+import 'profile/step_5_educational_background.dart';
+import 'profile/step_6_certification_training.dart';
+import 'profile/step_7_eligibility_license.dart';
+import 'profile/step_8_work_experience.dart';
+import 'profile/step_9_other_skills.dart';
+import 'widget/app_bar.dart';
 
 class ScreenSeekerProfile extends StatefulWidget {
   const ScreenSeekerProfile({super.key});
@@ -24,28 +23,7 @@ class ScreenSeekerProfile extends StatefulWidget {
 class _ScreenSeekerProfileState extends State<ScreenSeekerProfile> {
   int _currentStep = 0;
 
-  // --- EXISTING CONTROLLERS ---
-  final TextEditingController _emailCtrl = TextEditingController();
-  final TextEditingController _contactCtrl = TextEditingController();
-  final TextEditingController _dobCtrl = TextEditingController();
-  String _selectedSex = "Male";
-
-  // --- NEW CONTROLLERS (Based on image) ---
-  final TextEditingController _ageCtrl = TextEditingController();
-  final TextEditingController _religionCtrl = TextEditingController();
-  final TextEditingController _houseNoCtrl = TextEditingController();
-  final TextEditingController _barangayCtrl = TextEditingController();
-  final TextEditingController _cityCtrl = TextEditingController();
-  final TextEditingController _provinceCtrl = TextEditingController();
-  final TextEditingController _tinCtrl = TextEditingController();
-  final TextEditingController _heightCtrl = TextEditingController();
-  final TextEditingController _otherDisabilityCtrl = TextEditingController();
-
-  bool _isFirstTimeJobseeker = true;
-  String _civilStatus = "Single";
-  String _disability = "None";
-
-  final List<String> _menuSteps = [
+  final List<String> _sideBarSteps = [
     "Personal information",
     "Employment status/type",
     "Job preferences",
@@ -57,145 +35,32 @@ class _ScreenSeekerProfileState extends State<ScreenSeekerProfile> {
     "Other skills acquired without certificate",
   ];
 
+  final List<String> _menuSteps = [
+    "Personal information",
+    "Employment status/type",
+    "Job preferences",
+    "Language/dialects proficiency (check if applicable)",
+    "Educational background",
+    "Technical/Vocational and Other Training (include courses taken as part of college education)",
+    "Eligibility/Professional License",
+    "Work experience (Limit to 10-year period, start with the most recent employment)",
+    "Other skills acquired without certificate",
+  ];
+
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
-    final vacancyProvider = context.watch<VacancyProvider>();
     final user = authProvider.currentUser;
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.yellow,
-        elevation: 0,
-        toolbarHeight: 85,
-        automaticallyImplyLeading: false,
-        titleSpacing: 0, // Removes default edge padding so it aligns perfectly
-        centerTitle: true,
-        title: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: 1200,
-          ), // Matches the body container
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20.0,
-            ), // Matches body padding
-            child: Row(
-              children: [
-                // Official Seals / Logos
-                Image.asset('assets/naga.png', height: 70, fit: BoxFit.contain),
-                const SizedBox(width: 10),
-                Image.asset('assets/peso.png', height: 70, fit: BoxFit.contain),
-                const SizedBox(width: 15),
-                // Logo Text
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Naga Job",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24,
-                        letterSpacing: 1.2,
-                        height: 1.0,
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                // Dashboard Navigation Button
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ScreenSeekerDashboard(),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    "Dashboard",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-
-                // Profile Navigation Button
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ScreenSeekerProfile(),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    "Profile",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-
-                // Dropdown Menu triggered by the Profile Picture Circle (Now only for Logout)
-                PopupMenuButton<String>(
-                  offset: const Offset(
-                    0,
-                    50,
-                  ), // Pushes the dropdown slightly below the app bar
-                  tooltip: 'Account Menu',
-                  onSelected: (String value) {
-                    if (value == 'logout') {
-                      authProvider.currentUser = null;
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ScreenLogin(),
-                        ),
-                      );
-                    }
-                  },
-                  // The Profile Picture Circle
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: CircleAvatar(
-                      radius: 18,
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.person,
-                        color: Color(0xFF0D47A1),
-                      ), // Using an icon until a real image is added
-                    ),
-                  ),
-                  itemBuilder: (BuildContext context) =>
-                      <PopupMenuEntry<String>>[
-                        const PopupMenuItem<String>(
-                          value: 'logout',
-                          child: ListTile(
-                            leading: Icon(Icons.logout, color: Colors.red),
-                            title: Text(
-                              'Logout',
-                              style: TextStyle(color: Colors.red),
-                            ),
-                            contentPadding: EdgeInsets.zero,
-                            dense: true,
-                          ),
-                        ),
-                      ],
-                ),
-              ],
-            ),
-          ),
-        ),
+      appBar: SeekerAppBar(
+        onLogout: () {
+          authProvider.currentUser = null;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ScreenLogin()),
+          );
+        },
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -330,7 +195,7 @@ class _ScreenSeekerProfileState extends State<ScreenSeekerProfile> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: List.generate(_menuSteps.length, (index) {
+        children: List.generate(_sideBarSteps.length, (index) {
           bool isActive = _currentStep == index;
           return InkWell(
             onTap: () {
@@ -347,7 +212,7 @@ class _ScreenSeekerProfileState extends State<ScreenSeekerProfile> {
                 border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
               ),
               child: Text(
-                _menuSteps[index],
+                _sideBarSteps[index],
                 style: TextStyle(
                   color: isActive ? Colors.white : Colors.black87,
                   fontSize: 15,
@@ -425,68 +290,6 @@ class _ScreenSeekerProfileState extends State<ScreenSeekerProfile> {
     );
   }
 
-  // Updated text field builder to support hints and number keyboards
-  Widget _buildGreyTextFieldController(
-    TextEditingController controller, {
-    IconData? icon,
-    String? hint,
-    bool isNumber = false,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFE9ECEF),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade500),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
-          isDense: true,
-          suffixIcon: icon != null ? Icon(icon, color: Colors.black54) : null,
-        ),
-      ),
-    );
-  }
-
-  // Reusable dropdown builder for Civil Status & Disability
-  Widget _buildDropdown(
-    List<String> items,
-    String currentValue,
-    Function(String?) onChanged,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFE9ECEF),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          isExpanded: true,
-          value: currentValue,
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black54),
-          items: items.map((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value, style: const TextStyle(color: Colors.black87)),
-            );
-          }).toList(),
-          onChanged: onChanged,
-        ),
-      ),
-    );
-  }
-  // --- HELPER WIDGETS FOR FORM STYLING ---
-
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
@@ -497,37 +300,6 @@ class _ScreenSeekerProfileState extends State<ScreenSeekerProfile> {
           fontSize: 13,
           color: Colors.black87,
           letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGreyTextField(
-    String initialValue, {
-    bool isDropdown = false,
-    IconData? icon,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(
-          0xFFE9ECEF,
-        ), // The specific light grey fill color from the image
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: TextFormField(
-        initialValue: initialValue,
-        readOnly: isDropdown, // If it's a dropdown, prevent typing
-        decoration: InputDecoration(
-          border: InputBorder.none, // Hide default underline
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
-          isDense: true,
-          suffixIcon: isDropdown
-              ? const Icon(Icons.keyboard_arrow_down, color: Colors.black54)
-              : (icon != null ? Icon(icon, color: Colors.black54) : null),
         ),
       ),
     );

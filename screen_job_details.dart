@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:neis_cap/screen_login.dart';
-import 'package:neis_cap/screen_singup.dart';
 
+import 'screen_login.dart';
+import 'screen_singup.dart'; 
 class ScreenJobDetails extends StatelessWidget {
   final Map<String, dynamic> job;
 

@@ -33,7 +33,7 @@ class _ScreenManageStaffState extends State<ScreenManageStaff> {
             TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: "Full Name")),
             TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: "Email Address")),
             DropdownButtonFormField<String>(
-              value: role,
+              initialValue: role,
               items: ['Staff', 'Admin'].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
               onChanged: (val) => role = val!,
               decoration: const InputDecoration(labelText: "Assign Role"),

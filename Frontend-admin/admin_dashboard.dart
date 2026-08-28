@@ -74,7 +74,7 @@ class _ScreenAdminDashboardState extends State<ScreenAdminDashboard> {
               const SizedBox(height: 16),
               // Update this in _showStaffForm
               DropdownButtonFormField<String>(
-                value: role, // Now guaranteed to be one of the items below
+                initialValue: role, // Now guaranteed to be one of the items below
                 decoration: const InputDecoration(
                   labelText: "Assign Role",
                   border: OutlineInputBorder(),

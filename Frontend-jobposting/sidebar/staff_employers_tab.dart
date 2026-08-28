@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:neis_cap/Frontend-jobposting/post_vacancy_provider.dart';
 
+import '../post_vacancy_provider.dart';
+ 
 class StaffEmployersTab extends StatefulWidget {
   const StaffEmployersTab({super.key});
 
@@ -282,7 +283,7 @@ class _StaffEmployersTabState extends State<StaffEmployersTab> {
                       children: [
                         Expanded(
                           child: _buildLabeledField("Industry", true, DropdownButtonFormField<String>(
-                            value: selectedIndustry, dropdownColor: cardWhite,
+                            initialValue: selectedIndustry, dropdownColor: cardWhite,
                             decoration: _dropdownDecoration(),
                             items: ['Healthcare', 'Information Technology', 'Manufacturing', 'Retail', 'BPO/Call Center', 'Other'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
                             onChanged: (v) => setStateDialog(() => selectedIndustry = v!),

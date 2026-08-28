@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
-import 'package:neis_cap/auth_provider.dart';
-import 'package:neis_cap/screen_staff_login.dart';
-import 'package:neis_cap/Frontend-jobposting/post_vacancy_provider.dart';
+ 
+import '../Frontend-jobposting/post_vacancy_provider.dart';
+import '../auth_provider.dart';
+import '../screen_staff_login.dart'; 
 
 class ScreenJobMatcherDashboard extends StatefulWidget {
   const ScreenJobMatcherDashboard({super.key});
@@ -19,8 +19,6 @@ class ScreenJobMatcherDashboard extends StatefulWidget {
 class _ScreenJobMatcherDashboardState extends State<ScreenJobMatcherDashboard> {
   int _selectedMenu = 4; // 4 = Job Matching
   int _selectedJobIndex = 0; // 0 = All Jobs, 1+ = Specific Job
-
-  final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
   // --- Theme Colors ---
@@ -54,13 +52,7 @@ class _ScreenJobMatcherDashboardState extends State<ScreenJobMatcherDashboard> {
     final vacancyProvider = context.watch<VacancyProvider>();
     final user = context.watch<AuthProvider>().currentUser;
 
-    final activeJobs = vacancyProvider.activeJobs;
     final allApps = vacancyProvider.allApplications;
-
-    // Analytics Calculation
-    int pendingCount = allApps.where((a) => a['status'] == 'Pending').length;
-    int hiredCount = allApps.where((a) => a['status'] == 'Hired').length;
-    int totalApps = allApps.length;
 
     return Scaffold(
       backgroundColor: mainBg,
@@ -894,9 +886,7 @@ class _ScreenJobMatcherDashboardState extends State<ScreenJobMatcherDashboard> {
                 
                 // Body - FutureBuilder for Real Data
                 Expanded(
-                  child: seekerId == null 
-                  ? const Center(child: Text("Invalid Applicant ID. Cannot load profile."))
-                  : FutureBuilder<Map<String, dynamic>>(
+                  child: FutureBuilder<Map<String, dynamic>>(
                       // Replace YOUR_BACKEND_IP with your actual server IP or localhost
                       future: http.get(Uri.parse('http://localhost:3000/api/seekers/$seekerId/full-profile'))
                                   .then((res) => jsonDecode(res.body)),

@@ -1,10 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:neis_cap/Frontend-admin/admin_dashboard.dart';
-import 'package:neis_cap/Frontend-jobmatching/matching_dashboard.dart';
-import 'package:neis_cap/Frontend-jobposting/post_vacancy.dart';
-import 'package:provider/provider.dart';
-import 'package:neis_cap/auth_provider.dart';
+import 'package:flutter/material.dart'; 
+import 'package:provider/provider.dart'; 
 import 'Frontend-admin/admin_dashboard.dart';
+import 'Frontend-jobmatching/matching_dashboard.dart';
+import 'Frontend-jobposting/post_vacancy.dart';
+import 'auth_provider.dart';
 
 // admin@naga.gov.ph
 // admin123

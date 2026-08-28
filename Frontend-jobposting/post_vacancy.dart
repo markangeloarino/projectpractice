@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:neis_cap/Frontend-jobposting/sidebar/staff_employers_tab.dart';
-import 'package:neis_cap/Frontend-jobposting/sidebar/staff_job_postings_tab.dart';
-import 'package:neis_cap/Frontend-jobposting/sidebar/staff_overview_tab.dart';
-import 'package:neis_cap/Frontend-jobposting/sidebar/staff_reports_tab.dart';
+import 'package:flutter/material.dart'; 
 import 'package:provider/provider.dart';
-import 'package:neis_cap/auth_provider.dart';
-import 'package:neis_cap/screen_staff_login.dart';
-import 'package:neis_cap/Frontend-jobposting/post_vacancy_provider.dart';
+
+import '../auth_provider.dart';
+import '../screen_staff_login.dart';
+import 'post_vacancy_provider.dart';
+import 'sidebar/staff_employers_tab.dart';
+import 'sidebar/staff_job_postings_tab.dart';
+import 'sidebar/staff_overview_tab.dart';
+import 'sidebar/staff_reports_tab.dart'; 
 
  
 

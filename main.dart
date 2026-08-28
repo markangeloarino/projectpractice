@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:neis_cap/Frontend-jobmatching/matching_dashboard.dart';
-import 'package:neis_cap/Frontend-jobposting/post_vacancy.dart';
-import 'package:neis_cap/admin_provider.dart';
-import 'package:neis_cap/screen_staff_login.dart';
-import 'package:neis_cap/Frontend-jobseeker/seeker_dashboard.dart';
-import 'package:neis_cap/screen_login.dart';
-import 'package:neis_cap/screen_singup.dart'; 
-import 'package:neis_cap/Frontend-jobposting/post_vacancy_provider.dart';
-import 'package:neis_cap/screen_job.dart';
+import 'package:nagajob/Frontend-jobseeker/seeker_profile.dart';
+import 'package:nagajob/screen_login.dart'; 
 import 'package:provider/provider.dart';
 
+import 'Frontend-jobposting/post_vacancy.dart';
+import 'Frontend-jobposting/post_vacancy_provider.dart';
+import 'admin_provider.dart';
 import 'auth_provider.dart'; 
 
 void main() {
@@ -39,7 +35,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
       // Set the Staff Dashboard as your temporary home screen to test it!
-      home: const ScreenJobPosterDashboard(), 
+      home: const ScreenLogin(), 
     );
   }
 }
