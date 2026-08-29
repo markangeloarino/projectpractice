@@ -302,4 +302,22 @@ if (response.statusCode == 201) {
     notifyListeners();
     return false;
   }
+
+ Future<void> cancelApplication(int jobId, int seekerId) async {
+    // Use localhost for Flutter Web
+    final url = Uri.parse('http://localhost:3000/api/cancel-application?job_id=$jobId&seeker_id=$seekerId'); 
+    
+    try {
+      final response = await http.delete(url);
+      
+      if (response.statusCode == 200) {
+        myApplications.removeWhere((app) => app['job_id'].toString() == jobId.toString());
+        notifyListeners();
+      } else {
+        throw Exception("Backend failed to delete");
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

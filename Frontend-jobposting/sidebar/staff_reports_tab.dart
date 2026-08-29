@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class StaffReportsTab extends StatelessWidget {
-  const StaffReportsTab({super.key});
+class StaffReportsTabPost extends StatelessWidget {
+  const StaffReportsTabPost({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,16 +25,16 @@ class StaffReportsTab extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.bar_chart_outlined, size: 80, color: Colors.grey.shade300),
+                  // Icon(Icons.bar_chart_outlined, size: 80, color: Colors.grey.shade300),
                   const SizedBox(height: 16),
                   Text(
-                    "Analytics Compilation Engine Ready",
+                    "under development.",
                     style: TextStyle(fontSize: 16, color: Colors.grey.shade600, fontWeight: FontWeight.bold),
                   ),
-                  Text(
-                    "Data maps will populate automatically as placement states change.",
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
-                  ),
+                  // Text(
+                  //   "Data maps will populate automatically as placement states change.",
+                  //   style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
+                  // ),
                 ],
               ),
             ),

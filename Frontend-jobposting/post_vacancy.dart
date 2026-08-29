@@ -52,13 +52,13 @@ class _ScreenJobPosterDashboardState extends State<ScreenJobPosterDashboard> {
                 _buildHeader(),
                 Expanded(
                   child: IndexedStack(
-                    index: _selectedMenu == 6 ? 3 : (_selectedMenu > 3 ? 0 : _selectedMenu),
+                    index: _selectedMenu == 5 ? 3 : (_selectedMenu > 3 ? 0 : _selectedMenu),
                     children: const [
                       StaffOverviewTab(),
-                      Center(child: Text("Job Seekers Management under development.")),
+                      // Center(child: Text("Job Seekers Management under development.")),
                       StaffEmployersTab(),
                       StaffJobPostingsTab(),
-                      StaffReportsTab(),
+                      StaffReportsTabPost(),
                     ],
                   ),
                 ),
@@ -98,10 +98,10 @@ class _ScreenJobPosterDashboardState extends State<ScreenJobPosterDashboard> {
               padding: const EdgeInsets.symmetric(horizontal: 15),
               children: [
                 _sidebarItem(0, Icons.grid_view, "Dashboard"),
-                _sidebarItem(1, Icons.people_outline, "Job Seekers"),
-                _sidebarItem(2, Icons.business, "Employers"),
-                _sidebarItem(3, Icons.work_outline, "Job Postings"),
-                _sidebarItem(6, Icons.bar_chart, "Reports & Analytics"),
+                // _sidebarItem(1, Icons.people_outline, "Job Seekers"),
+                _sidebarItem(1, Icons.business, "Employers"),
+                _sidebarItem(2, Icons.work_outline, "Job Postings"),
+                _sidebarItem(3, Icons.bar_chart, "Reports & Analytics"),
               ],
             ),
           ),

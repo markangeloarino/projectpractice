@@ -24,6 +24,24 @@ app.get('/', (req, res) => {
 // MODULE 1: JOB SEEKER AUTHENTICATION
 // ==========================================
 
+
+app.delete('/api/cancel-application', (req, res) => {
+    // Extract parameters from the URL query
+    const { job_id, seeker_id } = req.query; 
+    
+    // Ensure the table name ('applications') matches your exact database schema
+    const sql = "DELETE FROM applications WHERE job_id = ? AND seeker_id = ?";
+    
+    db.query(sql, [job_id, seeker_id], (err, result) => {
+        if (err) {
+            console.error("Database deletion error:", err);
+            return res.status(500).json({ error: "Database error" });
+        }
+        res.status(200).json({ message: "Application removed successfully" });
+    });
+});
+
+
 app.post('/api/register', async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
     let conn;
@@ -895,7 +913,56 @@ app.post('/api/seekers/:id/other-skills', async (req, res) => {
     }
 });
 
+// ==========================================
+// GET FULL JOB SEEKER PROFILE FOR STAFF VIEW
+// ==========================================
+app.get('/api/seekers/:id/full-profile', async (req, res) => {
+    const seekerId = req.params.id;
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        
+        // Fetch all modular tables concurrently
+        const [
+            personal, employment, prefs, language, 
+            education, trainings, eligibilities, licenses, 
+            workExp, otherSkills
+        ] = await Promise.all([
+            conn.query("SELECT * FROM job_seekers WHERE seeker_id = ?", [seekerId]),
+            conn.query("SELECT * FROM seeker_employment_status WHERE seeker_id = ?", [seekerId]),
+            conn.query("SELECT * FROM seeker_job_preferences WHERE seeker_id = ?", [seekerId]),
+            conn.query("SELECT * FROM seeker_language_proficiencies WHERE seeker_id = ?", [seekerId]),
+            conn.query("SELECT * FROM seeker_educational_background WHERE seeker_id = ?", [seekerId]),
+            conn.query("SELECT * FROM seeker_trainings WHERE seeker_id = ?", [seekerId]),
+            conn.query("SELECT * FROM seeker_eligibilities WHERE seeker_id = ?", [seekerId]),
+            conn.query("SELECT * FROM seeker_licenses WHERE seeker_id = ?", [seekerId]),
+            conn.query("SELECT * FROM seeker_work_experiences WHERE seeker_id = ?", [seekerId]),
+            conn.query("SELECT * FROM seeker_other_skills WHERE seeker_id = ?", [seekerId])
+        ]);
 
+        if (personal.length === 0) return res.status(404).json({ error: "Job seeker not found." });
+
+        const profile = personal[0];
+        delete profile.password_hash; // Never send the password hash to the frontend
+
+        res.status(200).json({
+            personal_info: profile,
+            employment_status: employment[0] || {},
+            job_preferences: prefs[0] || {},
+            language: language[0] || {},
+            education: education[0] || {},
+            trainings: trainings || [],
+            eligibilities: eligibilities || [],
+            licenses: licenses || [],
+            work_experience: workExp || [],
+            other_skills: otherSkills[0] || {}
+        });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch full profile: " + err.message });
+    } finally {
+        if (conn) conn.release();
+    }
+});
 
 
 // ==========================================
@@ -968,6 +1035,7 @@ app.get('/api/admin/applications', async (req, res) => {
         conn = await pool.getConnection();
         const query = `
             SELECT a.application_id, a.status, a.applied_at, 
+                   a.seeker_id AS seeker_id, 
                    v.job_title, v.employer_name, 
                    s.first_name, s.last_name, s.email, s.contact_number
             FROM job_applications a
@@ -983,7 +1051,6 @@ app.get('/api/admin/applications', async (req, res) => {
         if (conn) conn.release();
     }
 });
-
 app.put('/api/admin/applications/:id/status', async (req, res) => {
     const appId = req.params.id;
     const { status } = req.body; // e.g., 'Approved', 'Rejected', 'Hired'
@@ -1050,30 +1117,30 @@ app.post('/api/vacancies', async (req, res) => {
 });
 
 
-// POST: Admin/Staff Login
-app.post('/api/staff/login', async (req, res) => {
-    const { email, password } = req.body;
-    let conn;
-    try {
-        conn = await pool.getConnection();
-        const rows = await conn.query("SELECT * FROM peso_staff WHERE email = ?", [email]);
+// // POST: Admin/Staff Login
+// app.post('/api/staff/login', async (req, res) => {
+//     const { email, password } = req.body;
+//     let conn;
+//     try {
+//         conn = await pool.getConnection();
+//         const rows = await conn.query("SELECT * FROM peso_staff WHERE email = ?", [email]);
         
-        if (rows.length === 0) return res.status(404).json({ error: "Account not found" });
+//         if (rows.length === 0) return res.status(404).json({ error: "Account not found" });
 
-        const user = rows[0];
-        const validPassword = await bcrypt.compare(password, user.password_hash);
-        if (!validPassword) return res.status(401).json({ error: "Invalid password" });
+//         const user = rows[0];
+//         const validPassword = await bcrypt.compare(password, user.password_hash);
+//         if (!validPassword) return res.status(401).json({ error: "Invalid password" });
 
-        delete user.password_hash; 
+//         delete user.password_hash; 
         
-        // Returns the user object, which now includes the 'role' ('Admin' or 'Staff')
-        res.status(200).json({ message: "Login successful", user: user });
-    } catch (err) {
-        res.status(500).json({ error: "Login failed" });
-    } finally {
-        if (conn) conn.release();
-    }
-});
+//         // Returns the user object, which now includes the 'role' ('Admin' or 'Staff')
+//         res.status(200).json({ message: "Login successful", user: user });
+//     } catch (err) {
+//         res.status(500).json({ error: "Login failed" });
+//     } finally {
+//         if (conn) conn.release();
+//     }
+// });
 
  
 
@@ -1194,4 +1261,67 @@ app.delete('/api/admin/staff/:id', async (req, res) => {
 
  
  
- 
+ // ==========================================
+// PLACEMENT RESULTS & FEEDBACK (Resp 6, 7)
+// Upgrades your existing status update feature to include 
+// mandatory feedback and hire dates from the employer.
+// ==========================================
+app.put('/api/applications/:id/placement', async (req, res) => {
+    const appId = req.params.id;
+    const { status, employer_feedback, hired_date } = req.body;
+    
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        const query = `
+            UPDATE job_applications SET 
+            status = ?, 
+            employer_feedback = ?, 
+            hired_date = ? 
+            WHERE application_id = ?
+        `;
+        await conn.query(query, [
+            status, 
+            employer_feedback || null, 
+            hired_date || null, 
+            appId
+        ]);
+        res.status(200).json({ message: "Placement result and employer feedback successfully recorded." });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to submit placement data: " + err.message });
+    } finally {
+        if (conn) conn.release();
+    }
+});
+
+// ==========================================
+// RECRUITMENT COORDINATION (Resp 4, 10, 11)
+// Allows logging of schedules, monitoring, and hiring 
+// activities between the employer and PESO.
+// ==========================================
+app.post('/api/employers/:id/coordinations', async (req, res) => {
+    const employerId = req.params.id;
+    const { activity_title, activity_date, activity_type, remarks } = req.body;
+    
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        const query = `
+            INSERT INTO recruitment_coordinations 
+            (employer_id, activity_title, activity_date, activity_type, remarks) 
+            VALUES (?, ?, ?, ?, ?)
+        `;
+        await conn.query(query, [
+            employerId, 
+            activity_title, 
+            activity_date, 
+            activity_type || 'General Coordination', 
+            remarks || ''
+        ]);
+        res.status(201).json({ message: "Recruitment coordination logged successfully." });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to log coordination: " + err.message });
+    } finally {
+        if (conn) conn.release();
+    }
+});

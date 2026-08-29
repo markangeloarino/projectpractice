@@ -5,6 +5,7 @@ import '../Frontend-jobposting/post_vacancy_provider.dart';
 import '../auth_provider.dart';
 import '../screen_login.dart';
 import 'widget/app_bar.dart';
+import 'seeker_job_details.dart';
 
 class ScreenSeekerMyApplications extends StatefulWidget {
   const ScreenSeekerMyApplications({super.key});
@@ -14,23 +15,19 @@ class ScreenSeekerMyApplications extends StatefulWidget {
       _ScreenSeekerMyApplicationsState();
 }
 
-class _ScreenSeekerMyApplicationsState
-    extends State<ScreenSeekerMyApplications> {
+class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
   @override
   void initState() {
     super.initState();
-    // Fetch both the active jobs and the user's application history when the screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vacancyProvider = context.read<VacancyProvider>();
       final authProvider = context.read<AuthProvider>();
 
-      // 1. Fetch public jobs
       vacancyProvider.fetchVacancies();
 
-      // 2. Fetch the logged-in user's specific application history
       final user = authProvider.currentUser;
       if (user != null) {
         final seekerId = user['seeker_id'] ?? user['id'];
@@ -39,10 +36,47 @@ class _ScreenSeekerMyApplicationsState
         }
       }
     });
-    // Fetch the jobs exactly when this screen loads
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<VacancyProvider>().fetchVacancies();
-    });
+  }
+// Handle application deletion locally and trigger API update
+ Future<void> _handleRemoveApplication(
+      BuildContext context, Map<String, dynamic> app, VacancyProvider provider) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Remove Application"),
+        content: Text("Are you sure you want to remove your application for ${app['job_title'] ?? 'this job'}?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Remove", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        final jobId = int.parse(app['job_id'].toString());
+        final user = context.read<AuthProvider>().currentUser;
+        final seekerId = int.parse((user?['seeker_id'] ?? user?['id']).toString());
+
+        await provider.cancelApplication(jobId, seekerId);
+        
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Application removed successfully."), backgroundColor: Colors.green),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Error: Could not connect to backend."), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -51,9 +85,10 @@ class _ScreenSeekerMyApplicationsState
     final vacancyProvider = context.watch<VacancyProvider>();
     final user = authProvider.currentUser;
 
-    final filteredJobs = vacancyProvider.activeJobs.where((job) {
-      final title = job['job_title']?.toString().toLowerCase() ?? '';
-      final employer = job['employer_name']?.toString().toLowerCase() ?? '';
+    // Filter application list based on search query
+    final filteredApps = vacancyProvider.myApplications.where((app) {
+      final title = app['job_title']?.toString().toLowerCase() ?? '';
+      final employer = app['employer_name']?.toString().toLowerCase() ?? '';
       return title.contains(_searchQuery.toLowerCase()) ||
           employer.contains(_searchQuery.toLowerCase());
     }).toList();
@@ -75,7 +110,6 @@ class _ScreenSeekerMyApplicationsState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Section
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 30, 20, 10),
                 child: Column(
@@ -97,7 +131,9 @@ class _ScreenSeekerMyApplicationsState
                   ],
                 ),
               ),
-              Expanded(child: _buildMyApplicationsTab(vacancyProvider, user, filteredJobs)),
+              Expanded(
+                child: _buildMyApplicationsTab(vacancyProvider, user, filteredApps),
+              ),
             ],
           ),
         ),
@@ -105,22 +141,19 @@ class _ScreenSeekerMyApplicationsState
     );
   }
 
-  // ==========================================
-  // "MY APPLICATIONS" TAB UI
-  // ==========================================
   Widget _buildMyApplicationsTab(
     VacancyProvider vacancyProvider,
     Map<String, dynamic>? user,
-    dynamic filteredJobs,
+    List<dynamic> filteredApps,
   ) {
     if (vacancyProvider.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (vacancyProvider.myApplications.isEmpty) {
+    if (vacancyProvider.myApplications.isEmpty && _searchQuery.isEmpty) {
       return Center(
         child: Text(
-          "You haven't applied to any jobs yet.\nBrowse the job vacancies to find your next opportunity!",
+          "You haven't applied to any jobs yet.\nBrowse job vacancies to find your next opportunity!",
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 15, color: Colors.grey.shade700),
         ),
@@ -144,13 +177,11 @@ class _ScreenSeekerMyApplicationsState
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
+              const Text(
                 "Track the status of the jobs you have applied for.",
                 style: TextStyle(fontSize: 14, color: Colors.black54),
               ),
               const SizedBox(height: 16),
-
-              // Custom Search Bar Layout
               Row(
                 children: [
                   Expanded(
@@ -160,9 +191,8 @@ class _ScreenSeekerMyApplicationsState
                         controller: _searchController,
                         onChanged: (val) => setState(() => _searchQuery = val),
                         decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                          ),
+                          hintText: "Search your applications...",
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                           border: OutlineInputBorder(
                             borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(4),
@@ -205,10 +235,8 @@ class _ScreenSeekerMyApplicationsState
                 ],
               ),
               const SizedBox(height: 30),
-
-              // Job Openings Header
               Text(
-                "${vacancyProvider.activeJobs.length} JOB OPENINGS",
+                "${filteredApps.length} APPLIED JOBS",
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF343A40),
@@ -219,39 +247,38 @@ class _ScreenSeekerMyApplicationsState
           ),
         ),
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: vacancyProvider.myApplications.length,
-            itemBuilder: (context, index) {
-              final app = vacancyProvider.myApplications[index];
-              return _buildApplicationHistoryCard(app);
-            },
-          ),
+          child: filteredApps.isEmpty
+              ? const Center(
+                  child: Text(
+                    "No applications match your search query.",
+                    style: TextStyle(fontSize: 15),
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: filteredApps.length,
+                  itemBuilder: (context, index) {
+                    return _buildApplicationHistoryCard(
+                        context, filteredApps[index], vacancyProvider);
+                  },
+                ),
         ),
       ],
     );
   }
 
-  // ==========================================
-  // INDIVIDUAL APPLICATION HISTORY CARD
-  // ==========================================
-  Widget _buildApplicationHistoryCard(Map<String, dynamic> app) {
-    // 1. Format the Date safely
+  Widget _buildApplicationHistoryCard(
+      BuildContext context, Map<String, dynamic> app, VacancyProvider provider) {
     String formattedDate = 'N/A';
     if (app["applied_at"] != null) {
       try {
-        DateTime parsedDate = DateTime.parse(
-          app["applied_at"].toString(),
-        ).toLocal();
+        DateTime parsedDate = DateTime.parse(app["applied_at"].toString()).toLocal();
         formattedDate = DateFormat('MMM d, yyyy').format(parsedDate);
-      } catch (e) {
-        Container();
-      }
+      } catch (_) {}
     }
 
-    // 2. Determine the status and apply the correct color
     String status = app['status']?.toString() ?? 'Pending';
-    Color statusColor = Colors.orange; // Default for Pending
+    Color statusColor = Colors.orange;
     Color statusBg = Colors.orange.shade50;
 
     if (status == 'Hired' || status == 'Approved') {
@@ -265,98 +292,166 @@ class _ScreenSeekerMyApplicationsState
       statusBg = Colors.blue.shade50;
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Left Icon
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade200),
+ return InkWell(
+      onTap: () {
+        // Show a pop-up dialog with job details and a CLOSE button
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            title: Text(
+              (app['job_title'] ?? 'Job Details').toString().toUpperCase(),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
             ),
-            child: const Icon(
-              Icons.business_center_outlined,
-              color: Colors.grey,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 20),
-
-          // Middle Details
-          Expanded(
-            child: Column(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  (app['job_title'] ?? 'Unknown Job').toString().toUpperCase(),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Colors.blue,
-                  ),
+                  "Employer: ${(app['employer_name'] ?? 'Unknown Employer').toString().toUpperCase()}",
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  (app['employer_name'] ?? 'Unknown Employer')
-                      .toString()
-                      .toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.blueAccent,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(
-                      Icons.calendar_today_outlined,
-                      size: 14,
-                      color: Colors.black54,
-                    ),
-                    const SizedBox(width: 6),
+                    const Icon(Icons.calendar_today_outlined, size: 16, color: Colors.black54),
+                    const SizedBox(width: 8),
+                    Text("Applied on: $formattedDate"),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Icon(Icons.info_outline, size: 16, color: Colors.black54),
+                    const SizedBox(width: 8),
                     Text(
-                      "Applied on: $formattedDate",
-                      style: const TextStyle(
-                        color: Colors.black54,
-                        fontSize: 12,
-                      ),
+                      "Current Status: ${status.toUpperCase()}",
+                      style: TextStyle(color: statusColor, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
               ],
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text(
+                  "CLOSE",
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ),
-
-          // Right Status Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: statusBg,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: statusColor.withValues(alpha: 0.5)),
-            ),
-            child: Text(
-              status.toUpperCase(),
-              style: TextStyle(
-                color: statusColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                letterSpacing: 0.5,
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 15),
+        padding: const EdgeInsets.all(20),
+        // ... Keep the rest of your Container UI exactly as it is
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: const Icon(
+                Icons.business_center_outlined,
+                color: Colors.grey,
+                size: 28,
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    (app['job_title'] ?? 'Unknown Job').toString().toUpperCase(),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    (app['employer_name'] ?? 'Unknown Employer').toString().toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.blueAccent,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today_outlined,
+                        size: 14,
+                        color: Colors.black54,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        "Applied on: $formattedDate",
+                        style: const TextStyle(
+                          color: Colors.black54,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: statusBg,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: statusColor.withValues(alpha: 0.5)),
+                  ),
+                  child: Text(
+                    status.toUpperCase(),
+                    style: TextStyle(
+                      color: statusColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextButton.icon(
+                  onPressed: () => _handleRemoveApplication(context, app, provider),
+                  icon: const Icon(Icons.delete_outline, color: Colors.red, size: 18),
+                  label: const Text(
+                    "Remove",
+                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
+
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

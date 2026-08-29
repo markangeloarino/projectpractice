@@ -34,7 +34,7 @@ class _ScreenStaffLoginState extends State<ScreenStaffLogin> {
               Image.asset('assets/peso.png', height: 100),
               const SizedBox(height: 20),
               const Text(
-                "Naga Job Portal ",
+                "Naga Job Portal",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 22,
