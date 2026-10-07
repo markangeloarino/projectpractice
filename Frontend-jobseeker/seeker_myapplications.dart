@@ -15,7 +15,8 @@ class ScreenSeekerMyApplications extends StatefulWidget {
       _ScreenSeekerMyApplicationsState();
 }
 
-class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications> {
+class _ScreenSeekerMyApplicationsState
+    extends State<ScreenSeekerMyApplications> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
@@ -37,16 +38,25 @@ class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications>
       }
     });
   }
-// Handle application deletion locally and trigger API update
- Future<void> _handleRemoveApplication(
-      BuildContext context, Map<String, dynamic> app, VacancyProvider provider) async {
+
+  // Handle application deletion locally and trigger API update
+  Future<void> _handleRemoveApplication(
+    BuildContext context,
+    Map<String, dynamic> app,
+    VacancyProvider provider,
+  ) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Remove Application"),
-        content: Text("Are you sure you want to remove your application for ${app['job_title'] ?? 'this job'}?"),
+        content: Text(
+          "Are you sure you want to remove your application for ${app['job_title'] ?? 'this job'}?",
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Cancel"),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(ctx, true),
@@ -58,21 +68,26 @@ class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications>
 
     if (confirm == true) {
       try {
-        final jobId = int.parse(app['job_id'].toString());
-        final user = context.read<AuthProvider>().currentUser;
-        final seekerId = int.parse((user?['seeker_id'] ?? user?['id']).toString());
+        // Target the specific application_id returned by your GET query
+        final appId = int.parse(app['application_id'].toString());
 
-        await provider.cancelApplication(jobId, seekerId);
-        
+        await provider.cancelApplication(appId);
+
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Application removed successfully."), backgroundColor: Colors.green),
+            const SnackBar(
+              content: Text("Application removed successfully."),
+              backgroundColor: Colors.green,
+            ),
           );
         }
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Error: Could not connect to backend."), backgroundColor: Colors.red),
+            const SnackBar(
+              content: Text("Error: Could not connect to backend."),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       }
@@ -132,7 +147,11 @@ class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications>
                 ),
               ),
               Expanded(
-                child: _buildMyApplicationsTab(vacancyProvider, user, filteredApps),
+                child: _buildMyApplicationsTab(
+                  vacancyProvider,
+                  user,
+                  filteredApps,
+                ),
               ),
             ],
           ),
@@ -192,7 +211,9 @@ class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications>
                         onChanged: (val) => setState(() => _searchQuery = val),
                         decoration: InputDecoration(
                           hintText: "Search your applications...",
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(4),
@@ -259,7 +280,10 @@ class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications>
                   itemCount: filteredApps.length,
                   itemBuilder: (context, index) {
                     return _buildApplicationHistoryCard(
-                        context, filteredApps[index], vacancyProvider);
+                      context,
+                      filteredApps[index],
+                      vacancyProvider,
+                    );
                   },
                 ),
         ),
@@ -268,11 +292,16 @@ class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications>
   }
 
   Widget _buildApplicationHistoryCard(
-      BuildContext context, Map<String, dynamic> app, VacancyProvider provider) {
+    BuildContext context,
+    Map<String, dynamic> app,
+    VacancyProvider provider,
+  ) {
     String formattedDate = 'N/A';
     if (app["applied_at"] != null) {
       try {
-        DateTime parsedDate = DateTime.parse(app["applied_at"].toString()).toLocal();
+        DateTime parsedDate = DateTime.parse(
+          app["applied_at"].toString(),
+        ).toLocal();
         formattedDate = DateFormat('MMM d, yyyy').format(parsedDate);
       } catch (_) {}
     }
@@ -292,13 +321,15 @@ class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications>
       statusBg = Colors.blue.shade50;
     }
 
- return InkWell(
+    return InkWell(
       onTap: () {
         // Show a pop-up dialog with job details and a CLOSE button
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
             title: Text(
               (app['job_title'] ?? 'Job Details').toString().toUpperCase(),
               style: const TextStyle(
@@ -317,7 +348,11 @@ class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications>
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today_outlined, size: 16, color: Colors.black54),
+                    const Icon(
+                      Icons.calendar_today_outlined,
+                      size: 16,
+                      color: Colors.black54,
+                    ),
                     const SizedBox(width: 8),
                     Text("Applied on: $formattedDate"),
                   ],
@@ -325,11 +360,18 @@ class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications>
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(Icons.info_outline, size: 16, color: Colors.black54),
+                    const Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: Colors.black54,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       "Current Status: ${status.toUpperCase()}",
-                      style: TextStyle(color: statusColor, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -382,7 +424,9 @@ class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    (app['job_title'] ?? 'Unknown Job').toString().toUpperCase(),
+                    (app['job_title'] ?? 'Unknown Job')
+                        .toString()
+                        .toUpperCase(),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -391,7 +435,9 @@ class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    (app['employer_name'] ?? 'Unknown Employer').toString().toUpperCase(),
+                    (app['employer_name'] ?? 'Unknown Employer')
+                        .toString()
+                        .toUpperCase(),
                     style: const TextStyle(
                       color: Colors.blueAccent,
                       fontSize: 13,
@@ -422,11 +468,16 @@ class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: statusBg,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: statusColor.withValues(alpha: 0.5)),
+                    border: Border.all(
+                      color: statusColor.withValues(alpha: 0.5),
+                    ),
                   ),
                   child: Text(
                     status.toUpperCase(),
@@ -440,13 +491,20 @@ class _ScreenSeekerMyApplicationsState extends State<ScreenSeekerMyApplications>
                 ),
                 const SizedBox(height: 12),
                 TextButton.icon(
-                  onPressed: () => _handleRemoveApplication(context, app, provider),
-                  icon: const Icon(Icons.delete_outline, color: Colors.red, size: 18),
+                  onPressed: () =>
+                      _handleRemoveApplication(context, app, provider),
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.red,
+                    size: 18,
+                  ),
                   label: const Text(
                     "Remove",
-                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-
                 ),
               ],
             ),

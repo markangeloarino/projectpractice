@@ -24,23 +24,31 @@ app.get('/', (req, res) => {
 // MODULE 1: JOB SEEKER AUTHENTICATION
 // ==========================================
 
+app.delete('/api/cancel-application/:id', async (req, res) => {
+    const applicationId = req.params.id;
+    let conn;
+    
+    try {
+        conn = await pool.getConnection();
+        
+        // Using the correct table 'job_applications' and primary key 'application_id'
+        const result = await conn.query(
+            "DELETE FROM job_applications WHERE application_id = ?", 
+            [applicationId]
+        );
 
-app.delete('/api/cancel-application', (req, res) => {
-    // Extract parameters from the URL query
-    const { job_id, seeker_id } = req.query; 
-    
-    // Ensure the table name ('applications') matches your exact database schema
-    const sql = "DELETE FROM applications WHERE job_id = ? AND seeker_id = ?";
-    
-    db.query(sql, [job_id, seeker_id], (err, result) => {
-        if (err) {
-            console.error("Database deletion error:", err);
-            return res.status(500).json({ error: "Database error" });
+        if (result.affectedRows > 0) {
+            res.status(200).json({ message: "Application removed successfully" });
+        } else {
+            res.status(404).json({ error: "Application not found" });
         }
-        res.status(200).json({ message: "Application removed successfully" });
-    });
+    } catch (err) {
+        console.error("Database deletion error:", err);
+        res.status(500).json({ error: "Database error: " + err.message });
+    } finally {
+        if (conn) conn.release();
+    }
 });
-
 
 app.post('/api/register', async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
