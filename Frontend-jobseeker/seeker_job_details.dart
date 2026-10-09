@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../Frontend-jobposting/post_vacancy_provider.dart';
 import '../auth_provider.dart';
-import '../screen_login.dart';
+import '../Home/screen_login.dart';
 import 'widget/app_bar.dart';
 
 class ScreenSeekerJobDetails extends StatefulWidget {

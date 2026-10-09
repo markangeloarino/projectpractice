@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../auth_provider.dart';
-import '../screen_staff_login.dart';
+import '../Home/screen_staff_login.dart';
 import 'post_vacancy_provider.dart';
 import 'sidebar/staff_employers_tab.dart';
 import 'sidebar/staff_job_postings_tab.dart';

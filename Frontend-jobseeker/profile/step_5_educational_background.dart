@@ -231,28 +231,13 @@ class _EducationalBackgroundState extends State<EducationalBackground> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // --- HEADER: CURRENTLY IN SCHOOL ---
-        Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
           children: [
-            BuildLabel(text: "Currently in School?"),
-            const SizedBox(width: 24),
-             Wrap(
-        spacing: 10,
-        children: [
-          _radioPill(
-            label: 'Non-K12 (old curriculum)',
-            value: 'Non-K12',
-            groupValue: _secondaryType,
-            onChanged: (v) => setState(() => _secondaryType = v!),
-          ),
-          _radioPill(
-            label: 'K12 (SHS strand)',
-            value: 'K12',
-            groupValue: _secondaryType,
-            onChanged: (v) => setState(() => _secondaryType = v!),
-          ),
-        ],
-      ),
+             const Text(
+              "Currently in School?",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(width: 24), 
             RadioButton(
               title: "YES",
               value: "Yes",
@@ -651,7 +636,7 @@ class _EducationalBackgroundState extends State<EducationalBackground> {
   );
   // ── Design tokens ──────────────────────────────────────────────────
   static const Color _primary = Color(0xFF1D3A8A);
-  static const Color _accent = Color(0xFF3B82F6); 
+  static const Color _accent = Color(0xFF3B82F6);
   static const Color _fieldBg = Color(0xFFF0F2F8);
   static const Color _labelColor = Color(0xFF374151);
   static const Color _hintColor = Color(0xFF9CA3AF);

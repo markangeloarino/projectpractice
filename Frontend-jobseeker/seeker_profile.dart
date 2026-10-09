@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../auth_provider.dart';
-import '../screen_login.dart';
+import '../Home/screen_login.dart';
 import 'profile/step_1_personal_information.dart';
 import 'profile/step_2_employment_status.dart';
 import 'profile/step_3_job_preference.dart';
